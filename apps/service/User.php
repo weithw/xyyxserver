@@ -33,12 +33,14 @@ class User extends Base
         $config = ZConfig::getField('cache', 'net');
         $cacheHelper = ZCache::getInstance($config['adapter'], $config);
         
-        if($cacheHelper->hexists("phonetoid","{$phone}_ptoi")) {
-            return common\Utils::msgFormat(0,"This phonenum has registered!");
-        }
-        if($cacheHelper->hexists("nametoid","{$username}_ntoi")) {
-            return common\Utils::msgFormat(0,"This username has registered!");
-        }
+        if($cacheHelper->hexists("phonetoid","{$phone}_ptoi") || 
+            $this->fetchOne(array('phone'=>$phone)) ) {
+            return common\Utils::msgFormat(0,"Phonenum already taken!");
+        } 
+        if($cacheHelper->hexists("nametoid","{$username}_ntoi") || 
+            $this->fetchOne(array('username'=>$username)) ) {
+            return common\Utils::msgFormat(0,"Username already taken!");
+        } 
         $result = $this->add(array(
                                 'phone' => "{$phone}",
                                 'username' => "{$username}",
@@ -70,8 +72,9 @@ class User extends Base
         } else if ($add_method[0] == "friendphone") {
             $friendID = $cacheHelper->hgetptoi($add_method[1]);
         }
-        if (!$friendID)
+        if (!$friendID) {
             return common\Utils::msgFormat(0,"Friend doesn't exist!");
+        }
         if ($cacheHelper->sismember($key,$friendID)) {
             return common\Utils::msgFormat(0,"You have added this friend!");
         } 
@@ -182,11 +185,14 @@ class User extends Base
                 }
                 if (isset($to_update['phone']) && $to_update['phone'] == $oldphone) {  
                     $cacheHelper->hsetitop($yourID, $to_update['phone']);
-                    $cacheHelper->hdelptoi($oldphone);
                     $cacheHelper->hsetptoi($to_update['phone'], $yourID);
-                    
+                    $cacheHelper->hdelptoi($oldphone);
                     //更改对应头像的图片名
-                    \rename(dirname(dirname(__DIR__))."/webroot/icon/{$oldphone}.png", dirname(dirname(__DIR__))."/webroot/icon/{$to_update['phone']}.png");
+                    if (file_exists("icon/{$oldphone}.png")) {
+                        \rename(dirname(dirname(__DIR__))."/webroot/icon/{$oldphone}.png", dirname(dirname(__DIR__))."/webroot/icon/{$to_update['phone']}.png");
+                    } else if (file_exists("icon/{$oldphone}.jpg")) {
+                        \rename(dirname(dirname(__DIR__))."/webroot/icon/{$oldphone}.jpg", dirname(dirname(__DIR__))."/webroot/icon/{$to_update['phone']}.jpg");
+                    }
                 }                      
                 return common\Utils::msgFormat(1,"Update Success!");
             } else

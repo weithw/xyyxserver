@@ -25,14 +25,17 @@ class Redis implements ICache
          * 时间+消息+发送人
          */
         $fromName=$this->hgetiton($sendId);
-        $msgTemp=$this->hget($uid, 'message');
-        $msgTime=date("Y:M:D:H:i:s",time()).'\n';
-        $msgTime.=$message;
-        $msgTemp.=$msgTime;
-        $msgTemp.='\n';
-        $msgTemp.=$fromName;
-        $msgTemp.='\n';
-        return $this->hset($uid, 'message', $msgTemp);
+        $json = $this->get("{$uid}_msg_xyyx");
+        $all_msg = json_decode($json);
+
+        $new_msg = array();
+        $new_msg['from_name'] = $fromName;
+        $new_msg['time'] = date("Y:M:D:H:i:s",time());
+        $new_msg['msg'] = $message;
+
+        $all_msg[] = $new_msg;
+
+        return $this->set("{$uid}_msg_xyyx", json_encode($all_msg));
 
     }
     /*
@@ -40,10 +43,16 @@ class Redis implements ICache
      */
     public function getMessage($uid)
     {
-        $message=$this->hget($uid, 'message');
+        $message=$this->get("{$uid}_msg_xyyx");
 
         return $message;
     }
+
+    public function delMessage($uid)
+    {
+        $message=$this->delete("{$uid}_msg_xyyx");
+    }
+
     public function enable()
     {
         return true;

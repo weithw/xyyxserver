@@ -85,8 +85,8 @@ class Swoole implements ICallback
                         $this->getConnection()->add($id, $fd);
                         $this->getConnection()->addFd($fd, $id);
                     }
-                   // $this->getOfflineMsg($serv,$id);
-                   // $this->sendToChannel($serv, self::LOGIN_SUCC, $routeResult);
+                   $this->getOfflineMsg($serv,$id);
+                  
                 break;
             case "hb":  //心跳处理
                 $uid = $this->getConnection()->getUid($fd);
@@ -100,11 +100,11 @@ class Swoole implements ICallback
                 $cacheHelper = ZCache::getInstance($config['adapter'], $config);
                 foreach ($result['to_phone'] as $key => $value) {
                     $to_id = $cacheHelper->hgetptoi($value);
-                    echo "value:";var_dump($value);echo "to_id:";var_dump($to_id);
+                    //echo "value:";var_dump($value);echo "to_id:";var_dump($to_id);
                     
                     $to_usr = $this->getConnection()->get($to_id);
                     echo "to_usr:";
-                    var_dump($to_usr);
+                    //var_dump($to_usr);
                     if (isset($to_usr['fd'])) {
                         \swoole_server_send($serv, $fd, "Send success!");
                         \swoole_server_send($serv, $to_usr['fd'], $_data);
@@ -116,21 +116,21 @@ class Swoole implements ICallback
                 break;
             case "reply":
                 echo $result['from_phone'] . " send: " . $result['msg'] . " to " . PHP_EOL;
-                var_dump($result['to_phone']);
+                //var_dump($result['to_phone']);
                 $config = ZConfig::getField('cache', 'net');
                 $cacheHelper = ZCache::getInstance($config['adapter'], $config);
-                foreach ($result['to_phone'] as $key => $value) {
-                    $to_id = $cacheHelper->hgetptoi($value);
-                    echo $result['from_id'] . " reply: " . $result['msg'] . " to " . $result['to_id'] . PHP_EOL;
+
+                $to_id = $cacheHelper->hgetptoi($result['to_phone']);
+                echo $result['from_id'] . " reply: " . $result['msg'] . " to " . $result['to_id'] . PHP_EOL;
         
-                    $to_usr = $this->getConnection()->get($to_id);
-                    if (isset($to_usr['fd'])) {
-                        \swoole_server_send($serv, $fd, "Reply success!");
-                        \swoole_server_send($serv, $to_usr['fd'], $_data);
-                    } else {
-                        \swoole_server_send($serv, $fd, "User isn't online!");
-                    }
+                $to_usr = $this->getConnection()->get($to_id);
+                if (isset($to_usr['fd'])) {
+                    \swoole_server_send($serv, $fd, "Reply success!");
+                    \swoole_server_send($serv, $to_usr['fd'], $_data);
+                } else {
+                    \swoole_server_send($serv, $fd, "User isn't online!");
                 }
+                
                 break;
             case "chat":
                 /*
@@ -139,15 +139,21 @@ class Swoole implements ICallback
                  *\swoole_server_send($serv,))
                  *}
                  */
-                $recvId=$result['to_id'];
-                $sendId=$result['from_id'];
+                $config = ZConfig::getField('cache', 'net');
+                $cacheHelper = ZCache::getInstance($config['adapter'], $config);
+                $sendId = $cacheHelper->hgetptoi($result['from_phone']);
+
                 $msg=$result['msg'];
-                $groupName=$result['groupName'];
-                if(!empty($groupName))
-                    $this->sendToGroup($serv,$msg,$groupName,$fd);
-                else
-                $this->sendOne($serv,$sendId,$recvId,$msg);
-                    break;
+                if (isset($result['to_group'])) {
+                    echo "group chat";
+                    $groupname=$result['to_group'];
+                    $this->sendToGroup($serv,$msg,$groupname,$sendId);
+                } else if (isset($result['to_phone'])) {
+                    $recvId = $cacheHelper->hgetptoi($result['to_phone']);
+                    $this->sendOne($serv,$sendId,$recvId,$msg);
+                }
+                 \swoole_server_send($serv, $fd, "Chat success!");
+                break;
             // case self::OLLIST:
             //     $routeResult = $this->_route(array(
             //         'a'=>'chat/main',
@@ -171,22 +177,9 @@ class Swoole implements ICallback
         //$serv = $params[0];
 
         if(!empty($offlineMessage)){
-            $offlineMessages=explode('\n',$offlineMessage);
-                      print_r($offlineMessages);
-             $countNum=count($offlineMessages)-1;//不知道为什么会多一个
-             for ($i=0;$i<$countNum; $i=$i+3){
-                //$oneMessage=array(
-                   // 'time'=>$offlineMessages[$i],
-                    //'message'=>$offlineMessages[$i+1],
-                    //'from_name'=>$offlineMessages[$i+2];
-                    //);
-               $oneMessage=common\Utils::msgSendFormat($offlineMessages[$i+2], $offlineMessages[$i+1], $offlineMessages[$i]);
-                \swoole_server_send($serv,$fd,"{$oneMessage}");
-                //while(!\swoole_server_send($serv,$fd,"{$oneMessage}"))
-                    sleep(2);
-
-            }
-
+            $message_tosend = common\Utils::msgSendFormat($offlineMessage);
+            \swoole_server_send($serv, $fd, $message_tosend);
+            $cacheHelper->delMessage($id);
         }
     }
     public function onClose()
@@ -209,7 +202,8 @@ class Swoole implements ICallback
 
     public function sendOne($serv, $sendId,$recvId,$data)
     {
-        if (empty($serv) || empty($id) || empty($data)||empty($sendId)) {
+
+        if (empty($serv) || empty($recvId) || empty($data)||empty($sendId)) {
             return false;
         }
 
@@ -219,20 +213,22 @@ class Swoole implements ICallback
          *online 如果在线的话就直接发
         */
         $to_usr=$this->getConnection()->get($recvId);
+        echo "recvId: ";var_dump($recvId);
+        echo "to fd: ";var_dump($to_usr);
         if(!empty($to_usr)){
+            $json = array();
             $fd=$to_usr['fd'];
-            $fromName=$cacheHelper->hgetiton($sendId);
-            $time=date("Y:M:D:H:i:s",time());
-            $data=common\Utils::msgSendFormat($fromName, $data,$time);
-            return  \swoole_server_send($serv,$fd,$data);
+            $json['from_name']=$cacheHelper->hgetiton($sendId);
+            $json['time']=date("Y-M-D H:i:s",time());
+            $json['msg']=$data;
+            $msg_tosend = common\Utils::msgSendFormat(json_encode($json));
+            return  \swoole_server_send($serv,$fd,$msg_tosend);
         }
         /*
          * *offline 如果没有在线的话就直接存起来就好，在线上的话才发，首先是先判断再说
          */
         else{
-            $to_usr=$this->getConnection()->get($recvId);
             $cacheHelper->addMessage($recvId,$data,$sendId);
-        //\swoole_server_send($serv,$fd ,"your message have send!");  //tell the sender
         }
 
     }
@@ -255,6 +251,8 @@ class Swoole implements ICallback
     {
 
     }
+
+
     public function sendToGroup($serv, $data, $groupName,$sendId)
     {
         $config = ZConfig::getField('cache', 'net');
@@ -264,7 +262,8 @@ class Swoole implements ICallback
         $result = $cacheHelper->smembers($key);       //get the set of groups which key is $key
         if (!empty($result)){
             foreach ($result as $index => $recvId) {
-                $this->sendOne($serv,$recvId,$sendId,$data);
+                if ($recvId != $sendId)
+                    $this->sendOne($serv,$sendId,$recvId,$data);
             }
         }
         else
@@ -278,7 +277,7 @@ class Swoole implements ICallback
         if (empty($list)) {
             return;
         }
-        debug_print_backtrace();
+
         foreach ($list as $uid => $fd) {
             if (!$this->getConnection()->heartbeat($uid,10)) {
                 $this->getConnection()->delete($fd, $uid);

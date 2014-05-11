@@ -33,21 +33,22 @@ if(!$ret) {
 		} else if ($name == '4') {
 			$data['type'] = "reply";
 			$data['from_phone'] = "188";
-			$data['to_phone'] = "178";
+			$data['to_phone'] = "155";
 			$data['reply_time'] = date("Y-m-d h:i:s");
 			$data['msg'] = "dangerous!!!";
 			$data['send_time'] = "2010-10-10 10:10:10";
-		} else if ($name == '5') {
-			$data['type'] = "login";
-			$data['phone'] = "178";
+		} else if ($name == '5'){
+			$data['type'] = "chat";
+			$data['from_phone'] = "1884";
+			$data['to_group'] = "ourgroup";
+			$data['send_time'] = date("Y-m-d h:i:s");
+			$data['msg'] = "aaa";			
 		} else if ($name == '6'){
 			$data['type'] = "chat";
-			$data['from_id'] = "155";
-			$data['to_id'] = array();
-			$data['to_id'][] = "188";
-			$data['to_id'][] = "178";
+			$data['from_phone'] = "1884";
+			$data['to_group'] = "ourgroup";
 			$data['send_time'] = date("Y-m-d h:i:s");
-			$data['msg'] = "dangerous!!!";			
+			$data['msg'] = "bbb";			
 		} else  {
 			$flag = 1;
 		}

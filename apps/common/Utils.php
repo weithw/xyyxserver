@@ -20,16 +20,11 @@ class Utils
      *   $code:0代表错误,1代表正确;  
      *   $msg:传入信息,在该函数中增加flag以验证合法性;
      */
-    public static function msgSendFormat($from_name,$msg,$time)
+    public static function msgSendFormat($msg)
     {
-        $data = array(
-                "from_name"=>$from_name,
-                "time" =>$time,
-                "message"=>$msg,
-                "flag" => "[HTTP_SSDUTXYYX]"
-        );
-        return json_encode($data);
+        return "[BEGIN_SSDUTXYYX_10101010]" . $msg . "[END_SSDUTXYYX_10101010]";
     }
+    
     public static function msgFormat($code, $msg)
     {
         $data = array(

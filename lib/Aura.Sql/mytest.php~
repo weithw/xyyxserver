@@ -1,0 +1,17 @@
+<?php
+use Aura\Sql_Query\QueryFactory;
+require_once('autoload.php');
+$pdo = new PDO("mysql:host=127.0.0.1;dbname=zchat","root","89657415");
+$query_factory = new QueryFactory('mysql');
+$select = $query_factory->newSelect();
+$select->cols(['username'])
+       ->from('zchat')
+       ->where('id=1');
+// bind the values and execute
+var_dump($select->__toString());
+$sth = $pdo->prepare($select->__toString());
+$sth->execute($select->getBindValues());
+
+// get the results back as an associative array
+$result = $sth->fetch(PDO::FETCH_ASSOC);
+var_dump($result);

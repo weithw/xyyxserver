@@ -32,22 +32,20 @@ if(!$ret) {
 			$data['msg'] = "中文行不行？";
 		} else if ($name == '4') {
 			$data['type'] = "reply";
-			$data['from_phone'] = "188";
+			$data['from_phone'] = "138";
 			$data['to_phone'] = "155";
 			$data['reply_time'] = date("Y-m-d h:i:s");
 			$data['msg'] = "dangerous!!!";
 			$data['send_time'] = "2010-10-10 10:10:10";
 		} else if ($name == '5'){
 			$data['type'] = "chat";
-			$data['from_phone'] = "1884";
-			$data['to_group'] = "ourgroup";
-			$data['send_time'] = date("Y-m-d h:i:s");
+			$data['from_phone'] = "138";
+			$data['to_phone'] = "155";
 			$data['msg'] = "aaa";			
 		} else if ($name == '6'){
 			$data['type'] = "chat";
-			$data['from_phone'] = "1884";
-			$data['to_group'] = "ourgroup";
-			$data['send_time'] = date("Y-m-d h:i:s");
+			$data['from_phone'] = "138";
+			$data['to_phone'] = "155";
 			$data['msg'] = "bbb";			
 		} else  {
 			$flag = 1;

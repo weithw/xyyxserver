@@ -107,7 +107,8 @@ class Swoole implements ICallback
                     //var_dump($to_usr);
                     if (isset($to_usr['fd'])) {
                         \swoole_server_send($serv, $fd, "Send success!");
-                        \swoole_server_send($serv, $to_usr['fd'], $_data);
+                        unset($result['to_phone']);
+                        \swoole_server_send($serv, $to_usr['fd'], common\Utils::msgSendFormat(json_encode($result)));
                     } else {
                         \swoole_server_send($serv, $fd, "User:{$value} isn't online!");
                     }    
@@ -126,7 +127,8 @@ class Swoole implements ICallback
                 $to_usr = $this->getConnection()->get($to_id);
                 if (isset($to_usr['fd'])) {
                     \swoole_server_send($serv, $fd, "Reply success!");
-                    \swoole_server_send($serv, $to_usr['fd'], $_data);
+                    unset($result['to_phone']);
+                    \swoole_server_send($serv, $to_usr['fd'], common\Utils::msgSendFormat(json_encode($result)));
                 } else {
                     \swoole_server_send($serv, $fd, "User isn't online!");
                 }

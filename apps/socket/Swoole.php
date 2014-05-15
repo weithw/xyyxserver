@@ -54,6 +54,8 @@ class Swoole implements ICallback
         $serv = $params[0];
         $fd = $params[1];
         echo "from {$fd}: get data: {$_data}".PHP_EOL;
+        error_log("  [".date("Y-m-d H:i:s") ."]*  from {$fd}: get data: {$_data}".PHP_EOL,
+3,dirname(dirname(__DIR__))."/log/log.txt");
         $begin_flag = substr($_data, 0, 26);
         $end_flag = substr($_data, -24, 24);
 
@@ -221,7 +223,7 @@ class Swoole implements ICallback
             $json = array();
             $fd=$to_usr['fd'];
             $json['from_name']=$cacheHelper->hgetiton($sendId);
-            $json['time']=date("Y-M-D H:i:s",time());
+            $json['time']=date("Y-m-d H:i:s",time());
             $json['msg']=$data;
             $msg_tosend = common\Utils::msgSendFormat(json_encode($json));
             return  \swoole_server_send($serv,$fd,$msg_tosend);

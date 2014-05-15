@@ -6,7 +6,7 @@
 */
 $clients = array();
 $client = new swoole_client(SWOOLE_SOCK_TCP, SWOOLE_SOCK_SYNC); //同步阻塞
-$ret = $client->connect('127.0.0.1', 8991, 0.5, 0);
+$ret = $client->connect('210.30.97.63', 8991, 0.5, 0);
 if(!$ret) {
 	echo "Connect Server fail.errCode=".$client->errCode;
 } else {
@@ -28,19 +28,19 @@ if(!$ret) {
 			$data['to_phone'] = array();
 			$data['to_phone'][] = "138";
 			//$data['to_phone'][] = "178";
-			$data['send_time'] = date("Y-m-d h:i:s");
+			$data['send_time'] = date("Y-m-d H:i:s");
 			$data['msg'] = "中文行不行？";
 		} else if ($name == '4') {
 			$data['type'] = "reply";
 			$data['from_phone'] = "138";
 			$data['to_phone'] = "155";
-			$data['reply_time'] = date("Y-m-d h:i:s");
+			$data['reply_time'] = date("Y-m-d H:i:s");
 			$data['msg'] = "dangerous!!!";
 			$data['send_time'] = "2010-10-10 10:10:10";
 		} else if ($name == '5'){
 			$data['type'] = "chat";
-			$data['from_phone'] = "138";
-			$data['to_phone'] = "155";
+			$data['from_phone'] = "44444444444";
+			$data['to_phone'] = "11111111111";
 			$data['msg'] = "aaa";			
 		} else if ($name == '6'){
 			$data['type'] = "chat";

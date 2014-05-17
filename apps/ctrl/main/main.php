@@ -175,7 +175,7 @@ class main extends Base
         $data = $this->getString($this->params, 'json');
         $data = str_replace('\"', '"', $data); //\" 替换为 "  否则无法解析json
         $data = str_replace("\'", '"', $data);
-        var_dump($data);
+        //var_dump($data);
         $data = json_decode($data, true);
 
         if (common\Utils::checkRequest($data, array('oldphone'))) {

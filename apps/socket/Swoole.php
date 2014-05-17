@@ -54,8 +54,13 @@ class Swoole implements ICallback
         $serv = $params[0];
         $fd = $params[1];
         echo "from {$fd}: get data: {$_data}".PHP_EOL;
+        echo dirname(dirname(__DIR__))."log.txt";
+        if(!file_exists(dirname(dirname(__DIR__))."/log.txt")){       //如果文件不存在（默认为当前目录下）
+            $fh = fopen(dirname(dirname(__DIR__))."/log.txt","w");
+            fclose($fh);            //关闭文件
+        }
         error_log("  [".date("Y-m-d H:i:s") ."]*  from {$fd}: get data: {$_data}".PHP_EOL,
-3,dirname(dirname(__DIR__))."/log/log.txt");
+3,dirname(dirname(__DIR__))."/log.txt");
         $begin_flag = substr($_data, 0, 26);
         $end_flag = substr($_data, -24, 24);
 

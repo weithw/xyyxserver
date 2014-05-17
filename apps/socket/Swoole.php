@@ -72,16 +72,13 @@ class Swoole implements ICallback
         if(!is_array($result)) {
             return null;
         }
-        //$fromPhone=$result['from_phone'];  //主要是$phoneNum登陆
-        //$toPhone=$result['to_phone'];
-        //$id = $cacheHelper->hgetptoi($fromPhone);
 
-        //$toNameId=$cacheHelper->hgetptoi($toPhone);
+        $config = ZConfig::getField('cache', 'net');
+        $cacheHelper = ZCache::getInstance($config['adapter'], $config);
+
         switch ($result['type']) {
             case "login":            
                 echo $fd . " login!" . PHP_EOL;
-                    $config = ZConfig::getField('cache', 'net');
-                    $cacheHelper = ZCache::getInstance($config['adapter'], $config);
                     $id = $cacheHelper->hgetptoi($result['phone']);
                     if (!empty($id)) {
                         $this->getConnection()->add($id, $fd);
@@ -93,13 +90,30 @@ class Swoole implements ICallback
             case "hb":  //心跳处理
                 $uid = $this->getConnection()->getUid($fd);
                 $this->getConnection()->uphb($uid);
-                \swoole_server_send($serv, $fd, "Receive heartbeat.");
+                //刷新群组列表
+                $key = "{$uid}_group";
+                $uid = $this->getConnection()->getUid($fd);
+                if ($cacheHelper->sismember($key,"need to refresh")) {
+                    $cacheHelper->srem($key,"need to refresh");
+
+                    $result = $cacheHelper->smembers($key);       //get the set of groups which key is $key
+                    if ($result){
+                        $grouplist = array();
+                        foreach ($result as $key => $value) {
+                            $grouplist[] = $value;
+                        }
+                        $result['grouplist'] = $grouplist;
+                        $result['type'] = "grouplist";
+                        \swoole_server_send($serv, $fd, common\Utils::msgSendFormat(json_encode($result)));
+                    } 
+                }
+
+                //\swoole_server_send($serv, $fd, "Receive heartbeat.");
                 break;
             case "message":
                 echo $result['from_phone'] . " send: " . $result['msg'] . " to " . PHP_EOL;
-                var_dump($result['to_phone']);
-                $config = ZConfig::getField('cache', 'net');
-                $cacheHelper = ZCache::getInstance($config['adapter'], $config);
+                //var_dump($result['to_phone']);
+            
                 foreach ($result['to_phone'] as $key => $value) {
                     $to_id = $cacheHelper->hgetptoi($value);
                     //echo "value:";var_dump($value);echo "to_id:";var_dump($to_id);
@@ -120,8 +134,6 @@ class Swoole implements ICallback
             case "reply":
                 echo $result['from_phone'] . " send: " . $result['msg'] . " to " . PHP_EOL;
                 //var_dump($result['to_phone']);
-                $config = ZConfig::getField('cache', 'net');
-                $cacheHelper = ZCache::getInstance($config['adapter'], $config);
 
                 $to_id = $cacheHelper->hgetptoi($result['to_phone']);
                 echo $result['from_id'] . " reply: " . $result['msg'] . " to " . $result['to_id'] . PHP_EOL;
@@ -143,8 +155,6 @@ class Swoole implements ICallback
                  *\swoole_server_send($serv,))
                  *}
                  */
-                $config = ZConfig::getField('cache', 'net');
-                $cacheHelper = ZCache::getInstance($config['adapter'], $config);
                 $sendId = $cacheHelper->hgetptoi($result['from_phone']);
 
                 $msg=$result['msg'];

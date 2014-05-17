@@ -112,12 +112,13 @@ class Group extends Base
         $key_user = "{$userID}_group";
         $key_group = "{$groupname}_member";
         if ($cacheHelper->sismember($key_user,$groupname)) {
-            return common\Utils::msgFormat(0,"You are in {$groupname}!");
+            return common\Utils::msgFormat(0,"The user:{$phone} is in {$groupname}!");
         } 
         if ($cacheHelper->sismember($key_group,$userID)) {
-            return common\Utils::msgFormat(0,"You are in {$groupname}!");
+            return common\Utils::msgFormat(0,"The user:{$phone} is in {$groupname}!");
         } 
-        $result_user = $cacheHelper->sadd($key_user,$groupname);  
+        $result_user = $cacheHelper->sadd($key_user,$groupname); 
+        $cacheHelper->sadd($key_user,"need to refresh");   
         $result_group = $cacheHelper->sadd($key_group,$userID);
 
         if (empty($result_user) || empty($result_group))

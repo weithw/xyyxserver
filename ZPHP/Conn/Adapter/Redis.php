@@ -78,7 +78,6 @@ class Redis implements IConn
 
     public function uphb($uid)
     {
-        debug_print_backtrace();
         echo "uphb" . PHP_EOL;
         $uinfo = $this->get($uid);
         if (empty($uinfo)) {

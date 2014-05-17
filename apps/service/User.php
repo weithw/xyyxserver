@@ -125,11 +125,14 @@ class User extends Base
         }
     }
 
-    public function groupList($yourphone)   //查询好友列表(使用redis)
+    public function groupList($yourphone)   //查询群组列表(使用redis)
     {
         $config = ZConfig::getField('cache', 'net');
         $cacheHelper = ZCache::getInstance($config['adapter'], $config);
         $yourID = $cacheHelper->hgetptoi($yourphone);
+        if ($cacheHelper->sismember($key,"need to refresh")) {
+            $cacheHelper->srem($key,"need to refresh");
+        }
         $key = "{$yourID}_group";
         $result = $cacheHelper->smembers($key);       //get the set of groups which key is $key
         if ($result){

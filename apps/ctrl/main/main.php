@@ -10,6 +10,12 @@ use common,
 class main extends Base
 {
     public $username;
+
+    public function main()
+    {
+        return common\Utils::showMsg(common\Utils::msgFormat(2,"url error"));
+    }
+
     /*
      *   作用:登录,提供三种方式:1,phone+password2,username+password3,weixin+password
      *   成功返回:用户的详细信息({"username":"ghw","weixin":null,"phone":"188","intro":null,"flag":"[HTTP_SSDUTXYYX]"})

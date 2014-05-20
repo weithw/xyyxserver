@@ -181,12 +181,12 @@ class User extends Base
             }
             $result = $this->update(array('phone',$oldphone), $to_update);       
             if ($result){
-                if (isset($to_update['username']) && $to_update['username'] == $oldusername) {  
+                if (isset($to_update['username']) && $to_update['username'] != $oldusername) {  
                     $cacheHelper->hsetiton($yourID, $to_update['username']);
                     $cacheHelper->hsetntoi($to_update['username'], $yourID);  
                     $cacheHelper->hdelntoi($oldusername); 
                 }
-                if (isset($to_update['phone']) && $to_update['phone'] == $oldphone) {  
+                if (isset($to_update['phone']) && $to_update['phone'] != $oldphone) {  
                     $cacheHelper->hsetitop($yourID, $to_update['phone']);
                     $cacheHelper->hsetptoi($to_update['phone'], $yourID);
                     $cacheHelper->hdelptoi($oldphone);

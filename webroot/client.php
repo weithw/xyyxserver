@@ -6,7 +6,7 @@
 */
 $clients = array();
 $client = new swoole_client(SWOOLE_SOCK_TCP, SWOOLE_SOCK_SYNC); //同步阻塞
-$ret = $client->connect('127.0.0.1', 8991, 0.5, 0);
+$ret = $client->connect('210.30.97.63', 8991, 0.5, 0);
 if(!$ret) {
 	echo "Connect Server fail.errCode=".$client->errCode;
 } else {

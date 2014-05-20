@@ -13,7 +13,7 @@ class main extends Base
 
     public function main()
     {
-        return common\Utils::showMsg(common\Utils::msgFormat(2,"url error"));
+        return common\Utils::returnError();
     }
 
     /*

@@ -62,4 +62,12 @@ class Utils
             '_tpl_file'=>'return.php',
         );
     }
+
+    public static function returnError()
+    {
+        return array(
+            '_view_mode'=>'Php',
+            '_tpl_file'=>'error.php',
+        );
+    }
 } 

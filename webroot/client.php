@@ -18,29 +18,29 @@ if(!$ret) {
 		$name = trim(fgets(STDIN));
 		if ($name == '1') {
 			$data['type'] = "login";
-			$data['phone'] = "11111111111";
+			$data['phone'] = "1";
 		} else if ($name == '2') {
 			$data['type'] = "login";
-			$data['phone'] = "22222222222";
+			$data['phone'] = "2";
 		} else if ($name == '3') {
 			$data['type'] = "message";
-			$data['from_phone'] = "11111111111";
+			$data['from_phone'] = "1";
 			$data['to_phone'] = array();
-			$data['to_phone'][] = "22222222222";
+			$data['to_phone'][] = "2";
 			//$data['to_phone'][] = "178";
 			$data['send_time'] = date("Y-m-d H:i:s");
 			$data['msg'] = "中文行不行？";
 		} else if ($name == '4') {
 			$data['type'] = "reply";
-			$data['from_phone'] = "138";
-			$data['to_phone'] = "155";
+			$data['from_phone'] = "2";
+			$data['to_phone'] = "1";
 			$data['reply_time'] = date("Y-m-d H:i:s");
 			$data['msg'] = "dangerous!!!";
 			$data['send_time'] = "2010-10-10 10:10:10";
 		} else if ($name == '5'){
 			$data['type'] = "chat";
-			$data['from_phone'] = "44444444444";
-			$data['to_phone'] = "11111111111";
+			$data['from_phone'] = "2";
+			$data['to_phone'] = "1";
 			$data['msg'] = "aaa";			
 		} else if ($name == '6'){
 			$data['type'] = "hb";

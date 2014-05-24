@@ -236,10 +236,11 @@ class Swoole implements ICallback
         echo "to fd: ";var_dump($to_usr);
         if(!empty($to_usr)){
             $json = array();
-            $fd=$to_usr['fd'];
-            $json['from_name']=$cacheHelper->hgetiton($sendId);
-            $json['time']=date("Y-m-d H:i:s",time());
-            $json['msg']=$data;
+            $fd = $to_usr['fd'];
+            $json['from_name'] = $cacheHelper->hgetiton($sendId);
+            $json['time'] = date("Y-m-d H:i:s",time());
+            $json['msg'] = $data;
+            $json['type'] = "chat";
             $msg_tosend = common\Utils::msgSendFormat(json_encode($json));
             return  \swoole_server_send($serv,$fd,$msg_tosend);
         }

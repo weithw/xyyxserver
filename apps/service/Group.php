@@ -19,17 +19,17 @@ class Group extends Base
         $builderID = $cacheHelper->hgetptoi($phone);
 
         if($this->fetchOne($groupname)) {
-            return common\Utils::msgFormat(0,"Group exists!");         
+            return common\Utils::msgHttpFormat(0,"Group exists!");         
         }
         $result = $this->add(array('groupname' => "{$groupname}",
                                 'builderID' => "{$builderID}",
                             )
         );
         if (empty($result))
-            return common\Utils::msgFormat(0,"Build Failed!");
+            return common\Utils::msgHttpFormat(0,"Build Failed!");
         else {
             $this->joinGroup($phone, $groupname);
-            return common\Utils::msgFormat(1,"Build Success!");
+            return common\Utils::msgHttpFormat(1,"Build Success!");
         }
     }
 
@@ -40,7 +40,7 @@ class Group extends Base
         $builderID = $cacheHelper->hgetptoi($phone);
 
         if (!$builderID)
-            return common\Utils::msgFormat(0,"Delte Group Failed!");
+            return common\Utils::msgHttpFormat(0,"Delte Group Failed!");
         if($this->fetchOne($groupname)) {
             $result = $this->del(array('groupname' => "{$groupname}",
                                     'builderID' => "{$builderID}",
@@ -48,7 +48,7 @@ class Group extends Base
             );
 
             if (!$result)
-                return common\Utils::msgFormat(0,"Delte Group in mysql Failed!");
+                return common\Utils::msgHttpFormat(0,"Delte Group in mysql Failed!");
             else {
                 $members = $this->groupMember($groupname);
                 foreach ($members as $key => $member) {
@@ -59,12 +59,12 @@ class Group extends Base
                 $key = "{$groupname}_member";
                 $result = $cacheHelper->delete($key);               
                 if ($result)
-                    return common\Utils::msgFormat(0,"Delete Group in redis Failed!");
-                return common\Utils::msgFormat(1,"Delete Group Success!");
+                    return common\Utils::msgHttpFormat(0,"Delete Group in redis Failed!");
+                return common\Utils::msgHttpFormat(1,"Delete Group Success!");
             }
         }
         else{
-            return common\Utils::msgFormat(0,"Group does't exist!");
+            return common\Utils::msgHttpFormat(0,"Group does't exist!");
         }
     }
 
@@ -72,7 +72,7 @@ class Group extends Base
     {
         $group = $this->fetchOne($groupname);
         if (empty($group))
-            return common\Utils::msgFormat(0,"Group:{$groupname} does't exist!");
+            return common\Utils::msgHttpFormat(0,"Group:{$groupname} does't exist!");
         else {
             $group["flag"] = "[HTTP_SSDUTXYYX]";
             $group["member"] = $this->groupMember($groupname);
@@ -101,30 +101,30 @@ class Group extends Base
     public function joinGroup($phone, $groupname)
     {
         if(!$this->fetchOne($groupname)) {
-            return common\Utils::msgFormat(0,"Group does't exist!");
+            return common\Utils::msgHttpFormat(0,"Group does't exist!");
         }   
             
         $config = ZConfig::getField('cache', 'net');
         $cacheHelper = ZCache::getInstance($config['adapter'], $config);
         $userID = $cacheHelper->hgetptoi($phone);
         if (!$userID)
-            return common\Utils::msgFormat(0,"UserID doesn't exist!");
+            return common\Utils::msgHttpFormat(0,"UserID doesn't exist!");
         $key_user = "{$userID}_group";
         $key_group = "{$groupname}_member";
         if ($cacheHelper->sismember($key_user,$groupname)) {
-            return common\Utils::msgFormat(0,"The user:{$phone} is in {$groupname}!");
+            return common\Utils::msgHttpFormat(0,"The user:{$phone} is in {$groupname}!");
         } 
         if ($cacheHelper->sismember($key_group,$userID)) {
-            return common\Utils::msgFormat(0,"The user:{$phone} is in {$groupname}!");
+            return common\Utils::msgHttpFormat(0,"The user:{$phone} is in {$groupname}!");
         } 
         $result_user = $cacheHelper->sadd($key_user,$groupname); 
         $cacheHelper->sadd($key_user,"need to refresh");   
         $result_group = $cacheHelper->sadd($key_group,$userID);
 
         if (empty($result_user) || empty($result_group))
-            return common\Utils::msgFormat(0,"Join {$groupname} Failed!");
+            return common\Utils::msgHttpFormat(0,"Join {$groupname} Failed!");
         else 
-            return common\Utils::msgFormat(1,"Join {$groupname} Success!");        
+            return common\Utils::msgHttpFormat(1,"Join {$groupname} Success!");        
     }
 
     public function quitGroup($phone, $groupname)
@@ -139,10 +139,10 @@ class Group extends Base
             $result_user = $cacheHelper->srem($key_user, $groupname);
             $result_group = $cacheHelper->srem($key_group, $userID);
             if (empty($result_user) || empty($result_group))
-                return common\Utils::msgFormat(0,"Quit {$groupname} Failed!");
+                return common\Utils::msgHttpFormat(0,"Quit {$groupname} Failed!");
             else
-                return common\Utils::msgFormat(1,"Quit {$groupname}Success!");
+                return common\Utils::msgHttpFormat(1,"Quit {$groupname}Success!");
         }  
-        return common\Utils::msgFormat(0,"You are not in {$groupname}!");      
+        return common\Utils::msgHttpFormat(0,"You are not in {$groupname}!");      
     }
 } 

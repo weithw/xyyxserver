@@ -6,7 +6,7 @@
 */
 $clients = array();
 $client = new swoole_client(SWOOLE_SOCK_TCP, SWOOLE_SOCK_SYNC); //同步阻塞
-$ret = $client->connect('210.30.97.63', 8991, 0.5, 0);
+$ret = $client->connect('127.0.0.1', 8991, 0.5, 0);
 if(!$ret) {
 	echo "Connect Server fail.errCode=".$client->errCode;
 } else {
@@ -24,9 +24,10 @@ if(!$ret) {
 			$data['phone'] = "2";
 		} else if ($name == '3') {
 			$data['type'] = "message";
-			$data['from_phone'] = "1";
+			$data['from_phone'] = "2";
 			$data['to_phone'] = array();
-			$data['to_phone'][] = "2";
+			$data['to_phone'][] = "1";
+
 			//$data['to_phone'][] = "178";
 			$data['send_time'] = date("Y-m-d H:i:s");
 			$data['msg'] = "中文行不行？";

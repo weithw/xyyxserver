@@ -21,7 +21,7 @@ class User extends Base
         );
 
         if(empty($user)) {
-            return common\Utils::msgFormat(0,"Login Failed!");
+            return common\Utils::msgHttpFormat(0,"Login Failed!");
         } else {
             $user["flag"] = "[HTTP_SSDUTXYYX]";
             return json_encode($user);
@@ -35,11 +35,11 @@ class User extends Base
         
         if($cacheHelper->hexists("phonetoid","{$phone}_ptoi") || 
             $this->fetchOne(array('phone'=>$phone)) ) {
-            return common\Utils::msgFormat(0,"Phonenum already taken!");
+            return common\Utils::msgHttpFormat(0,"Phonenum already taken!");
         } 
         if($cacheHelper->hexists("nametoid","{$username}_ntoi") || 
             $this->fetchOne(array('username'=>$username)) ) {
-            return common\Utils::msgFormat(0,"Username already taken!");
+            return common\Utils::msgHttpFormat(0,"Username already taken!");
         } 
         $result = $this->add(array(
                                 'phone' => "{$phone}",
@@ -49,14 +49,14 @@ class User extends Base
                             )
         );
         if (empty($result))
-            return common\Utils::msgFormat(0,"Register Failure!");
+            return common\Utils::msgHttpFormat(0,"Register Failure!");
         else {
             $userID = $this->fetchOne(array('phone'=>$phone))['ID'];   
             $cacheHelper->hsetitop($userID, $phone);
             $cacheHelper->hsetptoi($phone, $userID);
             $cacheHelper->hsetiton($userID, $username);
             $cacheHelper->hsetntoi($username, $userID);
-            return common\Utils::msgFormat(1,"Register Success!");
+            return common\Utils::msgHttpFormat(1,"Register Success!");
         }
     }
 
@@ -73,16 +73,16 @@ class User extends Base
             $friendID = $cacheHelper->hgetptoi($add_method[1]);
         }
         if (!$friendID) {
-            return common\Utils::msgFormat(0,"Friend doesn't exist!");
+            return common\Utils::msgHttpFormat(0,"Friend doesn't exist!");
         }
         if ($cacheHelper->sismember($key,$friendID)) {
-            return common\Utils::msgFormat(0,"You have added this friend!");
+            return common\Utils::msgHttpFormat(0,"You have added this friend!");
         } 
         $result = $cacheHelper->sadd($key,$friendID);  
         if (empty($result))
-            return common\Utils::msgFormat(0,"Add {$add_method[1]} Failed!");
+            return common\Utils::msgHttpFormat(0,"Add {$add_method[1]} Failed!");
         else 
-            return common\Utils::msgFormat(1,"Add {$add_method[1]} Success!");      
+            return common\Utils::msgHttpFormat(1,"Add {$add_method[1]} Success!");      
     }
 
     public function delFriend($yourphone, $del_method)   //添加好友(使用redis)
@@ -99,11 +99,11 @@ class User extends Base
         if ($cacheHelper->sismember($key,$friendID)) {
             $result = $cacheHelper->srem($key, $friendID);
             if (empty($result))
-                return common\Utils::msgFormat(0,"Delete {$del_method[1]} Failed!");
+                return common\Utils::msgHttpFormat(0,"Delete {$del_method[1]} Failed!");
             else
-                return common\Utils::msgFormat(1,"Delete {$del_method[1]} Success!");
+                return common\Utils::msgHttpFormat(1,"Delete {$del_method[1]} Success!");
         }  
-        return common\Utils::msgFormat(0,"User:{$del_method[1]} isn't your friend!");      
+        return common\Utils::msgHttpFormat(0,"User:{$del_method[1]} isn't your friend!");      
     }
 
     public function friendList($yourphone)   //查询好友列表(使用redis)
@@ -121,7 +121,7 @@ class User extends Base
             }    
             return json_encode(array("friendlist"=>$friendlist,"flag"=>"[HTTP_SSDUTXYYX]"));
         } else {
-            return common\Utils::msgFormat(0,"No Friend!");
+            return common\Utils::msgHttpFormat(0,"No Friend!");
         }
     }
 
@@ -159,7 +159,7 @@ class User extends Base
             return json_encode($user);
         }
         else
-            return common\Utils::msgFormat(0,"User:{$getinfo_method[1]} does't exist!");
+            return common\Utils::msgHttpFormat(0,"User:{$getinfo_method[1]} does't exist!");
     }
 
     public function updateUserInfo($oldphone, $to_update)
@@ -171,7 +171,7 @@ class User extends Base
         if ($oldusername) {
             if (isset($to_update['username']) && $oldusername != $to_update['username']) {
                 if($cacheHelper->hexists("nametoid","{$to_update['username']}_ntoi")) {
-                    return common\Utils::msgFormat(0,"This username has been used!");
+                    return common\Utils::msgHttpFormat(0,"This username has been used!");
                 }
             }
             if (isset($to_update['phone']) && $oldphone != $to_update['phone']) {
@@ -197,10 +197,10 @@ class User extends Base
                         \rename(dirname(dirname(__DIR__))."/webroot/icon/{$oldphone}.jpg", dirname(dirname(__DIR__))."/webroot/icon/{$to_update['phone']}.jpg");
                     }
                 }                      
-                return common\Utils::msgFormat(1,"Update Success!");
+                return common\Utils::msgHttpFormat(1,"Update Success!");
             } else
-                return common\Utils::msgFormat(0,"Update Failed(mysql)!");
+                return common\Utils::msgHttpFormat(0,"Update Failed(mysql)!");
         } else
-            return common\Utils::msgFormat(0,"Update Failed(redis)!");
+            return common\Utils::msgHttpFormat(0,"Update Failed(redis)!");
     }
 } 

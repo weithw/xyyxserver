@@ -20,12 +20,22 @@ class Utils
      *   $code:0代表错误,1代表正确;  
      *   $msg:传入信息,在该函数中增加flag以验证合法性;
      */
-    public static function msgSendFormat($msg)
+    public static function msgSocketFormat($msg, $type)
     {
-        return "[BEGIN_SSDUTXYYX_10101010]" . $msg . "[END_SSDUTXYYX_10101010]";
+        $flag = substr(md5(rand()), 0, 8);
+
+        if (isset($type)) {
+            $data = array(
+                    "type" => $type,
+                    "msg" => $msg
+                );
+            return "[BEGIN_SSDUTXYYX_{$flag}]" . json_encode($data) . "[END_SSDUTXYYX_{$flag}]";
+        } else {
+            return "[BEGIN_SSDUTXYYX_{$flag}]" . $msg . "[END_SSDUTXYYX_{$flag}]";
+        }
     }
     
-    public static function msgFormat($code, $msg)
+    public static function msgHttpFormat($code, $msg)
     {
         $data = array(
                 "code" => $code,

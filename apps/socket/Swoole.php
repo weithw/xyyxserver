@@ -109,7 +109,7 @@ class Swoole implements ICallback
                         }
                         $result['grouplist'] = $grouplist;
                         $result['type'] = "grouplist";
-                        \swoole_server_send($serv, $fd, common\Utils::msgSendFormat(json_encode($result)));
+                        \swoole_server_send($serv, $fd, common\Utils::msgSocketFormat(json_encode($result)));
                     } 
                 }
 
@@ -118,7 +118,7 @@ class Swoole implements ICallback
             case "message":
                 echo $result['from_phone'] . " send: " . $result['msg'] . " to " . PHP_EOL;
                 //var_dump($result['to_phone']);
-            
+                $fail_list = array();
                 foreach ($result['to_phone'] as $key => $value) {
                     $to_id = $cacheHelper->hgetptoi($value);
                     //echo "value:";var_dump($value);echo "to_id:";var_dump($to_id);
@@ -127,14 +127,17 @@ class Swoole implements ICallback
                     echo "to_usr:";
                     //var_dump($to_usr);
                     if (isset($to_usr['fd'])) {
-                        \swoole_server_send($serv, $fd, "Send success!");
                         unset($result['to_phone']);
-                        \swoole_server_send($serv, $to_usr['fd'], common\Utils::msgSendFormat(json_encode($result)));
+                        \swoole_server_send($serv, $to_usr['fd'], common\Utils::msgSocketFormat(json_encode($result)));
                     } else {
-                        \swoole_server_send($serv, $fd, "User:{$value} isn't online!");
+                        $fail_list[] = $value;
                     }    
+
                 }
-                
+                if (!empty($fail_list))
+                    \swoole_server_send($serv, $fd, common\Utils::msgSocketFormat($fail_list,"offline"));
+                else 
+                    \swoole_server_send($serv, $fd, common\Utils::msgSocketFormat("Send Success!","return"));
                 break;
             case "reply":
                 echo $result['from_phone'] . " send: " . $result['msg'] . " to " . PHP_EOL;
@@ -145,11 +148,11 @@ class Swoole implements ICallback
         
                 $to_usr = $this->getConnection()->get($to_id);
                 if (isset($to_usr['fd'])) {
-                    \swoole_server_send($serv, $fd, "Reply success!");
+                    \swoole_server_send($serv, $fd, common\Utils::msgSocketFormat("Reply Success!","return"));
                     unset($result['to_phone']);
-                    \swoole_server_send($serv, $to_usr['fd'], common\Utils::msgSendFormat(json_encode($result)));
+                    \swoole_server_send($serv, $to_usr['fd'], common\Utils::msgSocketFormat(json_encode($result)));
                 } else {
-                    \swoole_server_send($serv, $fd, "User isn't online!");
+                    \swoole_server_send($serv, $fd, common\Utils::msgSocketFormat($result['to_phone'],"offline"));
                 }
                 
                 break;
@@ -171,7 +174,7 @@ class Swoole implements ICallback
                     $recvId = $cacheHelper->hgetptoi($result['to_phone']);
                     $this->sendOne($serv,$sendId,$recvId,$msg);
                 }
-                 \swoole_server_send($serv, $fd, "Chat success!");
+                 \swoole_server_send($serv, $fd, common\Utils::msgSocketFormat("Chat Success!","return"));
                 break;
             // case self::OLLIST:
             //     $routeResult = $this->_route(array(
@@ -196,7 +199,7 @@ class Swoole implements ICallback
         //$serv = $params[0];
 
         if(!empty($offlineMessage)){
-            $message_tosend = common\Utils::msgSendFormat($offlineMessage);
+            $message_tosend = common\Utils::msgSocketFormat($offlineMessage);
             \swoole_server_send($serv, $fd, $message_tosend);
             $cacheHelper->delMessage($id);
         }
@@ -241,7 +244,7 @@ class Swoole implements ICallback
             $json['time'] = date("Y-m-d H:i:s",time());
             $json['msg'] = $data;
             $json['type'] = "chat";
-            $msg_tosend = common\Utils::msgSendFormat(json_encode($json));
+            $msg_tosend = common\Utils::msgSocketFormat(json_encode($json));
             return  \swoole_server_send($serv,$fd,$msg_tosend);
         }
         /*
